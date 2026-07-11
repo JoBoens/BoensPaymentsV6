@@ -3,47 +3,108 @@ declare(strict_types=1);
 
 $config = require __DIR__ . '/../config/app.php';
 
+$date = new DateTime('now', new DateTimeZone($config['timezone']));
+
+ob_start();
 ?>
-<!DOCTYPE html>
 
-<html lang="nl">
+<div class="page-header">
 
-<head>
+    <div>
+        <h1>Dashboard</h1>
+        <p>Welkom terug, Jo.</p>
+    </div>
 
-<meta charset="UTF-8">
-
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<title><?= $config['app_name']; ?></title>
-
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-</head>
-
-<body class="bg-light">
-
-<div class="container py-5">
-
-<div class="card shadow">
-
-<div class="card-body">
-
-<h1><?= $config['app_name']; ?></h1>
-
-<p>Versie <?= $config['version']; ?></p>
-
-<p class="text-success">
-
-Foundation gestart.
-
-</p>
+    <div class="today">
+        <?= $date->format('d/m/Y'); ?>
+    </div>
 
 </div>
 
-</div>
+<div class="cards">
+
+    <div class="card dashboard-card">
+        <h6>Openstaand</h6>
+        <h2>€ 0,00</h2>
+    </div>
+
+    <div class="card dashboard-card">
+        <h6>Deze maand</h6>
+        <h2>€ 0,00</h2>
+    </div>
+
+    <div class="card dashboard-card">
+        <h6>Dit jaar</h6>
+        <h2>€ 0,00</h2>
+    </div>
+
+    <div class="card dashboard-card">
+        <h6>Achterstallig</h6>
+        <h2>0</h2>
+    </div>
 
 </div>
 
-</body>
+<div class="card mt-4">
 
-</html>
+    <div class="card-body">
+
+        <div class="d-flex justify-content-between align-items-center">
+
+            <h4>Recente betalingen</h4>
+
+            <button class="btn btn-primary">
+
+                <i class="fa fa-plus"></i>
+
+                Nieuwe betaling
+
+            </button>
+
+        </div>
+
+        <table class="table mt-3">
+
+            <thead>
+
+            <tr>
+
+                <th>Nr</th>
+
+                <th>Firma</th>
+
+                <th>Omschrijving</th>
+
+                <th>Bedrag</th>
+
+                <th>Status</th>
+
+            </tr>
+
+            </thead>
+
+            <tbody>
+
+            <tr>
+
+                <td colspan="5" class="text-center text-muted">
+
+                    Nog geen betalingen.
+
+                </td>
+
+            </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<?php
+
+$content = ob_get_clean();
+
+require '../includes/layout.php';
