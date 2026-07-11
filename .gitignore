@@ -1,0 +1,5 @@
+/vendor/
+/storage/logs/*
+/storage/cache/*
+/uploads/*
+.env
