@@ -72,13 +72,13 @@ class App
     /**
      * Base URL
      */
-    public static function baseUrl(): string
-    {
-        return rtrim(
-            self::config('base_url', ''),
-            '/'
-        );
-    }
+ public static function baseUrl(): string
+{
+    return rtrim(
+        self::config('base_url', ''),
+        '/'
+    );
+}
 
     /**
      * Uploadmap

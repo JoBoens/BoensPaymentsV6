@@ -4,7 +4,7 @@
  * Boens Payments V6
  * ------------------------------------------------------------
  * Bestand : bootstrap.php
- * Versie  : 6.1.0
+ * Versie  : 6.7.0
  * Doel    : Centrale opstart van de applicatie
  * ------------------------------------------------------------
  */

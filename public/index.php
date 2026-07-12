@@ -1,13 +1,4 @@
 <?php
-/**
- * ------------------------------------------------------------
- * Boens Payments V6
- * ------------------------------------------------------------
- * Bestand : public/index.php
- * Versie  : 6.3.1
- * Doel    : Front Controller
- * ------------------------------------------------------------
- */
 
 declare(strict_types=1);
 
@@ -25,8 +16,10 @@ $router = new Router();
 |--------------------------------------------------------------------------
 */
 
-$router->get('/', [DashboardController::class, 'index']);
-$router->get('/dashboard', [DashboardController::class, 'index']);
+$router->get('/', [
+    DashboardController::class,
+    'index'
+]);
 
 /*
 |--------------------------------------------------------------------------
@@ -34,39 +27,34 @@ $router->get('/dashboard', [DashboardController::class, 'index']);
 |--------------------------------------------------------------------------
 */
 
-$router->get('/betalingen', [BetalingenController::class, 'index']);
+$router->get('/betalingen', [
+    BetalingenController::class,
+    'index'
+]);
 
-$router->get('/betalingen/create', [BetalingenController::class, 'create']);
-$router->post('/betalingen', [BetalingenController::class, 'store']);
+$router->get('/betalingen/create', [
+    BetalingenController::class,
+    'create'
+]);
 
-$router->get('/betalingen/edit', function () {
+$router->post('/betalingen/store', [
+    BetalingenController::class,
+    'store'
+]);
 
-    $controller = new BetalingenController();
+$router->get('/betalingen/edit/{id}', [
+    BetalingenController::class,
+    'edit'
+]);
 
-    $controller->edit((int)($_GET['id'] ?? 0));
+$router->post('/betalingen/update/{id}', [
+    BetalingenController::class,
+    'update'
+]);
 
-});
-
-$router->post('/betalingen/update', function () {
-
-    $controller = new BetalingenController();
-
-    $controller->update((int)($_POST['id'] ?? 0));
-
-});
-
-$router->get('/betalingen/delete', function () {
-
-    $controller = new BetalingenController();
-
-    $controller->delete((int)($_GET['id'] ?? 0));
-
-});
-
-/*
-|--------------------------------------------------------------------------
-| Router starten
-|--------------------------------------------------------------------------
-*/
+$router->get('/betalingen/delete/{id}', [
+    BetalingenController::class,
+    'delete'
+]);
 
 $router->dispatch();

@@ -4,7 +4,7 @@
  * Boens Payments V6
  * ------------------------------------------------------------
  * Bestand : app/Views/betalingen/index.php
- * Versie  : 6.3.1
+ * Versie  : 6.7.0
  * Doel    : Overzicht betalingen
  * ------------------------------------------------------------
  */
@@ -12,26 +12,31 @@
 declare(strict_types=1);
 
 use App\Core\App;
+
+$title = $title ?? 'Betalingen';
 ?>
 
-<div class="page-header mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4">
 
     <div>
 
-        <h1 class="mb-1">Betalingen</h1>
+        <h1 class="mb-1">
+            Betalingen
+        </h1>
 
         <p class="text-muted mb-0">
-            Beheer al je inkomende en uitgaande betalingen.
+            Overzicht van alle geregistreerde betalingen.
         </p>
 
     </div>
 
     <div>
 
-        <a href="<?= App::url('betalingen/create'); ?>"
-           class="btn btn-primary">
+        <a
+            href="<?= App::url('betalingen/create') ?>"
+            class="btn btn-primary">
 
-            <i class="fa-solid fa-plus"></i>
+            <i class="fa-solid fa-plus me-2"></i>
 
             Nieuwe betaling
 
@@ -51,7 +56,7 @@ use App\Core\App;
 
                 <input
                     type="text"
-                    id="search"
+                    id="searchInput"
                     class="form-control"
                     placeholder="Zoeken...">
 
@@ -62,9 +67,9 @@ use App\Core\App;
                 <select class="form-select">
 
                     <option value="">Alle statussen</option>
-                    <option>Open</option>
-                    <option>Betaald</option>
-                    <option>Vervallen</option>
+                    <option value="Open">Open</option>
+                    <option value="Betaald">Betaald</option>
+                    <option value="Vervallen">Vervallen</option>
 
                 </select>
 
@@ -74,7 +79,7 @@ use App\Core\App;
 
                 <select class="form-select">
 
-                    <option value="">Alle jaren</option>
+                    <option>Alle jaren</option>
 
                 </select>
 
@@ -93,30 +98,42 @@ use App\Core\App;
 
         <div class="table-responsive">
 
-            <table class="table table-hover align-middle">
+            <table class="table table-hover align-middle mb-0">
 
                 <thead class="table-light">
 
                 <tr>
 
-                    <th width="100">Nr</th>
+                    <th width="90">
+                        Nr
+                    </th>
 
-                    <th>Firma</th>
+                    <th>
+                        Firma
+                    </th>
 
-                    <th>Omschrijving</th>
+                    <th>
+                        Omschrijving
+                    </th>
 
-                    <th>Factuur</th>
+                    <th>
+                        Factuur
+                    </th>
 
-                    <th>Vervaldag</th>
+                    <th width="120">
+                        Vervaldatum
+                    </th>
 
-                    <th class="text-end">Bedrag</th>
+                    <th width="120" class="text-end">
+                        Bedrag
+                    </th>
 
-                    <th width="130">Status</th>
+                    <th width="120">
+                        Status
+                    </th>
 
-                    <th width="140" class="text-center">
-
+                    <th width="130" class="text-center">
                         Acties
-
                     </th>
 
                 </tr>
@@ -129,10 +146,9 @@ use App\Core\App;
 
                     <tr>
 
-                        <td colspan="8"
-                            class="text-center py-5 text-muted">
+                        <td colspan="8" class="text-center py-5 text-muted">
 
-                            <i class="fa-regular fa-folder-open fa-2x mb-3"></i>
+                            <i class="fa-regular fa-folder-open fa-3x mb-3"></i>
 
                             <br>
 
@@ -145,6 +161,22 @@ use App\Core\App;
                 <?php else: ?>
 
                     <?php foreach ($betalingen as $betaling): ?>
+
+                        <?php
+
+                        $badge = match ($betaling['status']) {
+
+                            'Open'      => 'warning',
+
+                            'Betaald'   => 'success',
+
+                            'Vervallen' => 'danger',
+
+                            default     => 'secondary'
+
+                        };
+
+                        ?>
 
                         <tr>
 
@@ -178,7 +210,7 @@ use App\Core\App;
 
                             </td>
 
-                            <td class="text-end fw-semibold">
+                            <td class="text-end">
 
                                 € <?= number_format(
                                     (float)$betaling['bedrag'],
@@ -191,23 +223,7 @@ use App\Core\App;
 
                             <td>
 
-                                <?php
-
-                                $kleur = match ($betaling['status']) {
-
-                                    'Betaald' => 'success',
-
-                                    'Open' => 'warning',
-
-                                    'Vervallen' => 'danger',
-
-                                    default => 'secondary'
-
-                                };
-
-                                ?>
-
-                                <span class="badge bg-<?= $kleur ?>">
+                                <span class="badge bg-<?= $badge ?>">
 
                                     <?= e($betaling['status']) ?>
 
@@ -219,7 +235,8 @@ use App\Core\App;
 
                                 <a
                                     href="<?= App::url('betalingen/edit?id=' . $betaling['id']) ?>"
-                                    class="btn btn-sm btn-outline-primary">
+                                    class="btn btn-sm btn-outline-primary"
+                                    title="Wijzigen">
 
                                     <i class="fa-solid fa-pen"></i>
 
@@ -228,6 +245,7 @@ use App\Core\App;
                                 <a
                                     href="<?= App::url('betalingen/delete?id=' . $betaling['id']) ?>"
                                     class="btn btn-sm btn-outline-danger"
+                                    title="Verwijderen"
                                     onclick="return confirm('Deze betaling verwijderen?');">
 
                                     <i class="fa-solid fa-trash"></i>
@@ -251,3 +269,28 @@ use App\Core\App;
     </div>
 
 </div>
+
+<script>
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    const input = document.getElementById('searchInput');
+
+    input.addEventListener('keyup', () => {
+
+        const value = input.value.toLowerCase();
+
+        document.querySelectorAll('tbody tr').forEach(row => {
+
+            row.style.display =
+                row.innerText.toLowerCase().includes(value)
+                    ? ''
+                    : 'none';
+
+        });
+
+    });
+
+});
+
+</script>

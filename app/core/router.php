@@ -4,8 +4,8 @@
  * Boens Payments V6
  * ------------------------------------------------------------
  * Bestand : app/Core/Router.php
- * Versie  : 6.4.0
- * Doel    : MVC Router met URL-parameters
+ * Versie  : 6.5.0
+ * Doel    : MVC Router
  * ------------------------------------------------------------
  */
 
@@ -18,12 +18,12 @@ use RuntimeException;
 class Router
 {
     /**
-     * Alle routes
+     * Alle routes.
      */
     private array $routes = [];
 
     /**
-     * GET
+     * GET-route registreren.
      */
     public function get(string $uri, callable|array $action): void
     {
@@ -31,7 +31,7 @@ class Router
     }
 
     /**
-     * POST
+     * POST-route registreren.
      */
     public function post(string $uri, callable|array $action): void
     {
@@ -39,30 +39,36 @@ class Router
     }
 
     /**
-     * Route toevoegen
+     * Route toevoegen.
      */
-    private function add(string $method, string $uri, callable|array $action): void
-    {
+    private function add(
+        string $method,
+        string $uri,
+        callable|array $action
+    ): void {
+
         $uri = '/' . trim($uri, '/');
 
         $this->routes[$method][] = [
-            'uri' => $uri,
-            'action' => $action
+            'uri'    => $uri,
+            'action' => $action,
         ];
     }
 
     /**
-     * Router uitvoeren
+     * Router uitvoeren.
      */
     public function dispatch(): void
     {
-        $method = $_SERVER['REQUEST_METHOD'];
+        $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
-        $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
+
+        $uri = parse_url($requestUri, PHP_URL_PATH);
 
         $base = parse_url(App::baseUrl(), PHP_URL_PATH);
 
-        if ($base && str_starts_with($uri, $base)) {
+        if ($base !== null && $base !== '' && str_starts_with($uri, $base)) {
             $uri = substr($uri, strlen($base));
         }
 
@@ -93,10 +99,22 @@ class Router
 
             [$controller, $function] = $action;
 
-            $controller = new $controller();
+            if (!class_exists($controller)) {
+                throw new RuntimeException(
+                    "Controller '{$controller}' niet gevonden."
+                );
+            }
+
+            $instance = new $controller();
+
+            if (!method_exists($instance, $function)) {
+                throw new RuntimeException(
+                    "Methode '{$function}' niet gevonden in {$controller}."
+                );
+            }
 
             call_user_func_array(
-                [$controller, $function],
+                [$instance, $function],
                 $matches
             );
 
@@ -106,7 +124,7 @@ class Router
         http_response_code(404);
 
         throw new RuntimeException(
-            'Pagina niet gevonden.'
+            "Route '{$uri}' niet gevonden."
         );
     }
 }

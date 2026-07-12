@@ -4,7 +4,7 @@
  * Boens Payments V6
  * ------------------------------------------------------------
  * Bestand : app/Core/View.php
- * Versie  : 6.3.0
+ * Versie  : 6.7.0
  * Doel    : Centrale View Renderer
  * ------------------------------------------------------------
  */
@@ -18,16 +18,21 @@ use RuntimeException;
 class View
 {
     /**
-     * Layoutbestand
+     * Standaard layout
      */
     private static string $layout = 'layouts/main';
+
+    /**
+     * Basispad naar de views
+     */
+    private const VIEW_PATH = BASE_PATH . '/app/Views/';
 
     /**
      * Layout wijzigen
      */
     public static function layout(string $layout): void
     {
-        self::$layout = $layout;
+        self::$layout = trim($layout, '/');
     }
 
     /**
@@ -37,7 +42,9 @@ class View
     {
         extract($data, EXTR_SKIP);
 
-        $viewFile = BASE_PATH . '/views/' . $view . '.php';
+        $viewFile = self::VIEW_PATH
+            . trim($view, '/')
+            . '.php';
 
         if (!is_file($viewFile)) {
             throw new RuntimeException(
@@ -51,8 +58,7 @@ class View
 
         $content = ob_get_clean();
 
-        $layoutFile = BASE_PATH
-            . '/views/'
+        $layoutFile = self::VIEW_PATH
             . self::$layout
             . '.php';
 
@@ -68,11 +74,16 @@ class View
     /**
      * Partial laden
      */
-    public static function partial(string $view, array $data = []): void
-    {
+    public static function partial(
+        string $view,
+        array $data = []
+    ): void {
+
         extract($data, EXTR_SKIP);
 
-        $file = BASE_PATH . '/views/' . $view . '.php';
+        $file = self::VIEW_PATH
+            . trim($view, '/')
+            . '.php';
 
         if (!is_file($file)) {
             throw new RuntimeException(
@@ -81,5 +92,25 @@ class View
         }
 
         require $file;
+    }
+
+    /**
+     * Bestaat een view?
+     */
+    public static function exists(string $view): bool
+    {
+        return is_file(
+            self::VIEW_PATH
+            . trim($view, '/')
+            . '.php'
+        );
+    }
+
+    /**
+     * Huidige layout ophalen
+     */
+    public static function getLayout(): string
+    {
+        return self::$layout;
     }
 }

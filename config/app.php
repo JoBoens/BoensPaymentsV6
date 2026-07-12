@@ -35,7 +35,7 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'base_url' => '/BetalingenV6',
+    'base_url' => '/BetalingenV6/public',
 
     'timezone' => 'Europe/Brussels',
 
