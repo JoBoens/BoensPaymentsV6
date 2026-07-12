@@ -3,9 +3,9 @@
  * ------------------------------------------------------------
  * Boens Payments V6
  * ------------------------------------------------------------
- * Bestand : app/Core/Database.php
+ * Bestand : app/Core/App.php
  * Versie  : 6.1.0
- * Doel    : Centrale databaseverbinding (PDO Singleton)
+ * Doel    : Centrale applicatieklasse
  * ------------------------------------------------------------
  */
 
@@ -13,79 +13,104 @@ declare(strict_types=1);
 
 namespace App\Core;
 
-use PDO;
-use PDOException;
-use RuntimeException;
-
-class Database
+class App
 {
-    private static ?PDO $connection = null;
+    /**
+     * Applicatieconfiguratie
+     */
+    private static array $config = [];
 
     /**
-     * Geeft één enkele PDO-verbinding terug.
+     * Applicatie starten
      */
-    public static function connection(): PDO
+    public static function boot(): void
     {
-        if (self::$connection instanceof PDO) {
-            return self::$connection;
-        }
+        self::loadConfig();
 
-        $config = require dirname(__DIR__, 2) . '/config/database.php';
-
-        $dsn = sprintf(
-            'mysql:host=%s;dbname=%s;charset=%s',
-            $config['host'],
-            $config['database'],
-            $config['charset']
+        date_default_timezone_set(
+            self::$config['timezone']
         );
 
-        try {
-
-            self::$connection = new PDO(
-                $dsn,
-                $config['username'],
-                $config['password'],
-                [
-                    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                    PDO::ATTR_EMULATE_PREPARES   => false,
-                ]
-            );
-
-        } catch (PDOException $e) {
-
-            throw new RuntimeException(
-                'Databaseverbinding mislukt: ' . $e->getMessage()
-            );
-
-        }
-
-        return self::$connection;
-    }
-
-    /**
-     * Controle of de verbinding beschikbaar is.
-     */
-    public static function isConnected(): bool
-    {
-        try {
-
-            self::connection();
-
-            return true;
-
-        } catch (\Throwable) {
-
-            return false;
-
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
         }
     }
 
     /**
-     * Verbreek de verbinding.
+     * Configuratie laden
      */
-    public static function disconnect(): void
+    private static function loadConfig(): void
     {
-        self::$connection = null;
+        self::$config = require dirname(__DIR__, 2)
+            . '/config/app.php';
+    }
+
+    /**
+     * Config-waarde ophalen
+     */
+    public static function config(string $key, mixed $default = null): mixed
+    {
+        return self::$config[$key] ?? $default;
+    }
+
+    /**
+     * Applicatienaam
+     */
+    public static function name(): string
+    {
+        return self::config('app_name', 'Boens Payments');
+    }
+
+    /**
+     * Versie
+     */
+    public static function version(): string
+    {
+        return self::config('version', '6.1.0');
+    }
+
+    /**
+     * Base URL
+     */
+    public static function baseUrl(): string
+    {
+        return rtrim(
+            self::config('base_url', ''),
+            '/'
+        );
+    }
+
+    /**
+     * Uploadmap
+     */
+    public static function uploadPath(): string
+    {
+        return dirname(__DIR__, 2)
+            . '/uploads/';
+    }
+
+    /**
+     * Volledig pad naar storage
+     */
+    public static function storagePath(): string
+    {
+        return dirname(__DIR__, 2)
+            . '/storage/';
+    }
+
+    /**
+     * URL opbouwen
+     */
+    public static function url(string $path = ''): string
+    {
+        return self::baseUrl() . '/' . ltrim($path, '/');
+    }
+
+    /**
+     * Databaseverbinding ophalen
+     */
+    public static function db(): \PDO
+    {
+        return Database::connection();
     }
 }

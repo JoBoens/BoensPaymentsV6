@@ -3,16 +3,16 @@ declare(strict_types=1);
 
 return [
 
-    'app_name' => 'Boens Payments',
+    'app_name'   => 'Boens Payments',
 
-    'version' => '6.0.1',
+    'version'    => '6.1.0',
 
-    'environment' => 'development',
+    'base_url'   => '/BetalingenV6',
 
-    'timezone' => 'Europe/Brussels',
+    'timezone'   => 'Europe/Brussels',
 
-    'locale' => 'nl_BE',
+    'locale'     => 'nl_BE',
 
-    'currency' => 'EUR',
+    'currency'   => 'EUR',
 
 ];
