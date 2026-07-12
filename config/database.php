@@ -1,34 +1,16 @@
 <?php
 declare(strict_types=1);
 
-class Database
-{
-    private static ?PDO $pdo = null;
+return [
 
-    public static function connection(): PDO
-    {
-        if (self::$pdo === null) {
+    'host'     => 'localhost',
 
-            $config = require __DIR__ . '/../config/database.php';
+    'database' => 'eskdeta2_BetalingenV6',
 
-            $dsn = sprintf(
-                'mysql:host=%s;dbname=%s;charset=%s',
-                $config['host'],
-                $config['database'],
-                $config['charset']
-            );
+    'username' => 'eskdeta2_Jo',
 
-            self::$pdo = new PDO(
-                $dsn,
-                $config['username'],
-                $config['password'],
-                [
-                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                ]
-            );
-        }
+    'password' => 'Jobo0021!',
 
-        return self::$pdo;
-    }
-}
+    'charset'  => 'utf8mb4',
+
+];

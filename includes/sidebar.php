@@ -13,9 +13,9 @@
         Dashboard
     </a>
 
-    <a href="#">
-        <i class="fa-solid fa-money-check-dollar"></i>
-        Betalingen
+   <a href="/BetalingenV6/modules/betalingen/index.php">
+    <i class="fa-solid fa-money-check-dollar"></i>
+    Betalingen
     </a>
 
     <a href="#">
