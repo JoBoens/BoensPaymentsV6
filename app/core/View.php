@@ -4,8 +4,8 @@
  * Boens Payments V6
  * ------------------------------------------------------------
  * Bestand : app/Core/View.php
- * Versie  : 6.1.0
- * Doel    : Weergave van pagina's via centrale layout
+ * Versie  : 6.3.0
+ * Doel    : Centrale View Renderer
  * ------------------------------------------------------------
  */
 
@@ -13,25 +13,34 @@ declare(strict_types=1);
 
 namespace App\Core;
 
+use RuntimeException;
+
 class View
 {
     /**
-     * Render een view binnen de hoofdlayout.
-     *
-     * @param string $view
-     * @param array  $data
+     * Layoutbestand
+     */
+    private static string $layout = 'layouts/main';
+
+    /**
+     * Layout wijzigen
+     */
+    public static function layout(string $layout): void
+    {
+        self::$layout = $layout;
+    }
+
+    /**
+     * View renderen
      */
     public static function render(string $view, array $data = []): void
     {
         extract($data, EXTR_SKIP);
 
-        $viewFile = dirname(__DIR__, 2)
-            . '/modules/'
-            . $view
-            . '.php';
+        $viewFile = BASE_PATH . '/views/' . $view . '.php';
 
-        if (!file_exists($viewFile)) {
-            throw new \RuntimeException(
+        if (!is_file($viewFile)) {
+            throw new RuntimeException(
                 "View niet gevonden: {$viewFile}"
             );
         }
@@ -42,7 +51,35 @@ class View
 
         $content = ob_get_clean();
 
-        require dirname(__DIR__, 2)
-            . '/includes/layout.php';
+        $layoutFile = BASE_PATH
+            . '/views/'
+            . self::$layout
+            . '.php';
+
+        if (!is_file($layoutFile)) {
+            throw new RuntimeException(
+                "Layout niet gevonden: {$layoutFile}"
+            );
+        }
+
+        require $layoutFile;
+    }
+
+    /**
+     * Partial laden
+     */
+    public static function partial(string $view, array $data = []): void
+    {
+        extract($data, EXTR_SKIP);
+
+        $file = BASE_PATH . '/views/' . $view . '.php';
+
+        if (!is_file($file)) {
+            throw new RuntimeException(
+                "Partial niet gevonden: {$file}"
+            );
+        }
+
+        require $file;
     }
 }

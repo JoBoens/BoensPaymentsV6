@@ -1,110 +1,72 @@
 <?php
+/**
+ * ------------------------------------------------------------
+ * Boens Payments V6
+ * ------------------------------------------------------------
+ * Bestand : public/index.php
+ * Versie  : 6.3.1
+ * Doel    : Front Controller
+ * ------------------------------------------------------------
+ */
+
 declare(strict_types=1);
 
-$config = require __DIR__ . '/../config/app.php';
+require_once dirname(__DIR__) . '/bootstrap.php';
 
-$date = new DateTime('now', new DateTimeZone($config['timezone']));
+use App\Core\Router;
+use App\Controllers\DashboardController;
+use App\Controllers\BetalingenController;
 
-ob_start();
-?>
+$router = new Router();
 
-<div class="page-header">
+/*
+|--------------------------------------------------------------------------
+| Dashboard
+|--------------------------------------------------------------------------
+*/
 
-    <div>
-        <h1>Dashboard</h1>
-        <p>Welkom terug, Jo.</p>
-    </div>
+$router->get('/', [DashboardController::class, 'index']);
+$router->get('/dashboard', [DashboardController::class, 'index']);
 
-    <div class="today">
-        <?= $date->format('d/m/Y'); ?>
-    </div>
+/*
+|--------------------------------------------------------------------------
+| Betalingen
+|--------------------------------------------------------------------------
+*/
 
-</div>
+$router->get('/betalingen', [BetalingenController::class, 'index']);
 
-<div class="cards">
+$router->get('/betalingen/create', [BetalingenController::class, 'create']);
+$router->post('/betalingen', [BetalingenController::class, 'store']);
 
-    <div class="card dashboard-card">
-        <h6>Openstaand</h6>
-        <h2>€ 0,00</h2>
-    </div>
+$router->get('/betalingen/edit', function () {
 
-    <div class="card dashboard-card">
-        <h6>Deze maand</h6>
-        <h2>€ 0,00</h2>
-    </div>
+    $controller = new BetalingenController();
 
-    <div class="card dashboard-card">
-        <h6>Dit jaar</h6>
-        <h2>€ 0,00</h2>
-    </div>
+    $controller->edit((int)($_GET['id'] ?? 0));
 
-    <div class="card dashboard-card">
-        <h6>Achterstallig</h6>
-        <h2>0</h2>
-    </div>
+});
 
-</div>
+$router->post('/betalingen/update', function () {
 
-<div class="card mt-4">
+    $controller = new BetalingenController();
 
-    <div class="card-body">
+    $controller->update((int)($_POST['id'] ?? 0));
 
-        <div class="d-flex justify-content-between align-items-center">
+});
 
-            <h4>Recente betalingen</h4>
+$router->get('/betalingen/delete', function () {
 
-            <button class="btn btn-primary">
+    $controller = new BetalingenController();
 
-                <i class="fa fa-plus"></i>
+    $controller->delete((int)($_GET['id'] ?? 0));
 
-                Nieuwe betaling
+});
 
-            </button>
+/*
+|--------------------------------------------------------------------------
+| Router starten
+|--------------------------------------------------------------------------
+*/
 
-        </div>
-
-        <table class="table mt-3">
-
-            <thead>
-
-            <tr>
-
-                <th>Nr</th>
-
-                <th>Firma</th>
-
-                <th>Omschrijving</th>
-
-                <th>Bedrag</th>
-
-                <th>Status</th>
-
-            </tr>
-
-            </thead>
-
-            <tbody>
-
-            <tr>
-
-                <td colspan="5" class="text-center text-muted">
-
-                    Nog geen betalingen.
-
-                </td>
-
-            </tr>
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-</div>
-
-<?php
-
-$content = ob_get_clean();
-
-require '../includes/layout.php';
+$router->dispatch();

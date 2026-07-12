@@ -4,8 +4,8 @@
  * Boens Payments V6
  * ------------------------------------------------------------
  * Bestand : app/Models/Betaling.php
- * Versie  : 6.2.0
- * Doel    : Model voor alle betalingen
+ * Versie  : 6.3.0
+ * Doel    : Model Betalingen
  * ------------------------------------------------------------
  */
 
@@ -18,179 +18,148 @@ use PDO;
 
 class Betaling
 {
+    /**
+     * Databaseverbinding
+     */
     private PDO $db;
 
+    /**
+     * Constructor
+     */
     public function __construct()
     {
         $this->db = Database::connection();
     }
 
     /**
-     * Alle betalingen ophalen.
+     * Alle betalingen
      */
-    public function getAll(): array
+    public function all(): array
     {
         $sql = "
             SELECT
                 b.*,
-                f.naam AS firma,
-                c.naam AS categorie
+                f.naam AS firma
             FROM betalingen b
             LEFT JOIN firmas f
-                ON b.firma_id = f.id
-            LEFT JOIN categorieen c
-                ON b.categorie_id = c.id
-            ORDER BY b.factuurdatum DESC,
+                ON f.id = b.firma_id
+            ORDER BY b.vervaldatum ASC,
                      b.id DESC
         ";
 
         return $this->db
             ->query($sql)
-            ->fetchAll();
+            ->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**
-     * Eén betaling ophalen.
+     * Laatste betalingen
      */
-    public function find(int $id): ?array
+    public function latest(int $limit = 10): array
+    {
+        $stmt = $this->db->prepare("
+            SELECT
+                b.*,
+                f.naam AS firma
+            FROM betalingen b
+            LEFT JOIN firmas f
+                ON f.id = b.firma_id
+            ORDER BY b.id DESC
+            LIMIT :limiet
+        ");
+
+        $stmt->bindValue(
+            ':limiet',
+            $limit,
+            PDO::PARAM_INT
+        );
+
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Eén betaling ophalen
+     */
+    public function find(int $id): array|null
     {
         $stmt = $this->db->prepare("
             SELECT *
             FROM betalingen
             WHERE id = :id
-            LIMIT 1
         ");
 
         $stmt->execute([
             'id' => $id
         ]);
 
-        $betaling = $stmt->fetch();
+        $betaling = $stmt->fetch(PDO::FETCH_ASSOC);
 
         return $betaling ?: null;
     }
 
     /**
-     * Nieuwe betaling opslaan.
+     * Nieuwe betaling bewaren
      */
     public function create(array $data): bool
     {
-        $sql = "
-            INSERT INTO betalingen (
-
+        $stmt = $this->db->prepare("
+            INSERT INTO betalingen
+            (
                 nummer,
-
-                leverancier_factuurnummer,
-
                 firma_id,
-
                 categorie_id,
-
                 omschrijving,
-
-                referentie,
-
+                factuurnummer,
                 factuurdatum,
-
                 vervaldatum,
-
-                betaaldatum,
-
                 bedrag,
-
-                status,
-
-                opmerkingen,
-
-                created_at,
-
-                updated_at
-
+                status
             )
-
-            VALUES (
-
+            VALUES
+            (
                 :nummer,
-
-                :leverancier_factuurnummer,
-
                 :firma_id,
-
                 :categorie_id,
-
                 :omschrijving,
-
-                :referentie,
-
+                :factuurnummer,
                 :factuurdatum,
-
                 :vervaldatum,
-
-                :betaaldatum,
-
                 :bedrag,
-
-                :status,
-
-                :opmerkingen,
-
-                NOW(),
-
-                NOW()
-
+                :status
             )
-        ";
-
-        $stmt = $this->db->prepare($sql);
+        ");
 
         return $stmt->execute($data);
     }
 
     /**
-     * Betaling wijzigen.
+     * Betaling wijzigen
      */
     public function update(int $id, array $data): bool
     {
         $data['id'] = $id;
 
-        $sql = "
+        $stmt = $this->db->prepare("
             UPDATE betalingen
             SET
-
-                leverancier_factuurnummer = :leverancier_factuurnummer,
-
-                firma_id = :firma_id,
-
-                categorie_id = :categorie_id,
-
-                omschrijving = :omschrijving,
-
-                referentie = :referentie,
-
-                factuurdatum = :factuurdatum,
-
-                vervaldatum = :vervaldatum,
-
-                betaaldatum = :betaaldatum,
-
-                bedrag = :bedrag,
-
-                status = :status,
-
-                opmerkingen = :opmerkingen,
-
-                updated_at = NOW()
-
+                firma_id      = :firma_id,
+                categorie_id  = :categorie_id,
+                omschrijving  = :omschrijving,
+                factuurnummer = :factuurnummer,
+                factuurdatum  = :factuurdatum,
+                vervaldatum   = :vervaldatum,
+                bedrag        = :bedrag,
+                status        = :status
             WHERE id = :id
-        ";
-
-        $stmt = $this->db->prepare($sql);
+        ");
 
         return $stmt->execute($data);
     }
 
     /**
-     * Betaling verwijderen.
+     * Betaling verwijderen
      */
     public function delete(int $id): bool
     {
@@ -206,75 +175,32 @@ class Betaling
     }
 
     /**
-     * Zoeken.
-     */
-    public function search(string $zoek): array
-    {
-        $stmt = $this->db->prepare("
-            SELECT
-                b.*,
-                f.naam AS firma,
-                c.naam AS categorie
-
-            FROM betalingen b
-
-            LEFT JOIN firmas f
-                ON b.firma_id = f.id
-
-            LEFT JOIN categorieen c
-                ON b.categorie_id = c.id
-
-            WHERE
-
-                b.nummer LIKE :zoek
-
-                OR
-
-                b.omschrijving LIKE :zoek
-
-                OR
-
-                b.referentie LIKE :zoek
-
-                OR
-
-                f.naam LIKE :zoek
-
-            ORDER BY b.factuurdatum DESC
-        ");
-
-        $stmt->execute([
-            'zoek' => "%{$zoek}%"
-        ]);
-
-        return $stmt->fetchAll();
-    }
-
-    /**
-     * Totaal openstaand bedrag.
+     * Totaal openstaand bedrag
      */
     public function totaalOpenstaand(): float
     {
-        $stmt = $this->db->query("
-            SELECT
-                COALESCE(SUM(bedrag),0)
-            FROM betalingen
-            WHERE status='Open'
-        ");
-
-        return (float)$stmt->fetchColumn();
+        return (float)$this->db
+            ->query("
+                SELECT
+                    COALESCE(SUM(bedrag),0)
+                FROM betalingen
+                WHERE status='Open'
+            ")
+            ->fetchColumn();
     }
 
     /**
-     * Aantal betalingen.
+     * Aantal achterstallige betalingen
      */
-    public function aantal(): int
+    public function aantalAchterstallig(): int
     {
-        $stmt = $this->db->query("
-            SELECT COUNT(*)
-            FROM betalingen
-        ");
-
-        return (int)$stmt->fetchColumn();
+        return (int)$this->db
+            ->query("
+                SELECT COUNT(*)
+                FROM betalingen
+                WHERE vervaldatum < CURDATE()
+                  AND status <> 'Betaald'
+            ")
+            ->fetchColumn();
     }
 }
