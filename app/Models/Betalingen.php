@@ -34,39 +34,37 @@ class Betaling
 
     public function create(array $data): bool
     {
-        $sql = "
-            INSERT INTO betalingen
-            (
-                nummer,
-                firma_id,
-                omschrijving,
-                factuurdatum,
-                referentie,
-                bedrag,
-                uiterste_datum,
-                categorie_id,
-                opmerkingen,
-                created_at,
-                updated_at
-            )
-            VALUES
-            (
-                :nummer,
-                :firma_id,
-                :omschrijving,
-                :factuurdatum,
-                :referentie,
-                :bedrag,
-                :uiterste_datum,
-                :categorie_id,
-                :opmerkingen,
-                NOW(),
-                NOW()
-            )
-        ";
+    $sql = "
+        INSERT INTO betalingen
+        (
+            nummer,
+            firma_id,
+            omschrijving,
+            factuurdatum,
+            referentie,
+            bedrag,
+            uiterste_datum,
+            betaaldatum,
+            categorie_id,
+            opmerkingen
+        )
+        VALUES
+        (
+            :nummer,
+            :firma_id,
+            :omschrijving,
+            :factuurdatum,
+            :referentie,
+            :bedrag,
+            :uiterste_datum,
+            :betaaldatum,
+            :categorie_id,
+            :opmerkingen
+        )
+    ";
 
-        $stmt = $this->db->prepare($sql);
+    $stmt = $this->db->prepare($sql);
 
-        return $stmt->execute($data);
+    return $stmt->execute($data);
     }
 }
